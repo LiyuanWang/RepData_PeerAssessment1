@@ -8,6 +8,7 @@ output:
 
 ## Loading and preprocessing the data
 ```{r}
+library(lattice);
 dat <- read.csv("activity.csv");
 ```
 
@@ -65,10 +66,35 @@ rep <- summary(steps_day_new);
 rep[c("Mean", "Median")]
 ```
 
-Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+Do these values differ from the estimates from the first part of the assignment?
 
+[Ans] Yes.
+
+What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+[Ans] It decreases the estimatation.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+1. Create a new factor variable in the dataset with two levels ¨C ¡°weekday¡± and ¡°weekend¡± indicating whether a given date is a weekday or weekend day.
+
 ```{r}
+Sys.setlocale("LC_TIME", "English");
+var1<- dimnames(steps_day_new);
+var1<- var1[[1]];
+dic <- data.frame("date" = var1);
+var1<-strptime(var1, "%Y-%m-%d");
+var1 <- weekdays(var1);
+for(i in 1:61)
+    dic[i, "weekday"] = ifelse(var1[i] %in% c("Sunday", "Saturday"), F, T);
+```
+
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+```{r}
+dat_new <- merge(dat_new, dic, by = "date");
+dat_new <- split(dat_new, dat_new$weekday);
+steps_interval_new_T <- tapply(dat_new[[2]]$steps, dat_new[[2]]$interval, mean, na.rm = T);
+steps_interval_new_F <- tapply(dat_new[[1]]$steps, dat_new[[1]]$interval, mean, na.rm = T);
+y <- data.frame("interval" = c(x, x),"steps" = c(steps_interval_new_T, steps_interval_new_F), "weekday" = c(rep("weekday", 288), rep("weekend", 288)));
+xyplot(steps~interval|weekday, data = y, layout = c(1, 2), type = 's');
 ```
